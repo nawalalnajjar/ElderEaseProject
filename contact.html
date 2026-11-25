@@ -21,12 +21,11 @@
         <li><a class="nav-link" href="help-request.html">طلب مساعدة</a></li>
         <li><a class="nav-link" href="learn.html">تعلم الخدمات</a></li>
         <li><a class="nav-link" href="volunteers.html">المتطوعون</a></li>
-        <li><a class="nav-link" href="appointments.html">المواعيد</a></li>
         <li><a class="nav-link" href="gov-services.html">الخدمات الحكومية</a></li>
         <li><a class="nav-link" href="organizations.html">المؤسسات</a></li>
         <li><a class="nav-link active" href="contact.html">تواصل معنا</a></li>
       </ul>
-      <a href="admin.html" class="nav-link btn-admin"><i class="bi bi-shield-lock ms-1"></i> الإدارة</a>
+      <a href="login.html" class="nav-link btn-admin"><i class="bi bi-shield-lock ms-1"></i> الإدارة</a>
     </div>
   </div>
 </nav>
@@ -52,28 +51,23 @@
           </div>
         </div>
 
-        <!--
-          ============================================================
-          اربط هذا الفورم مع ASP.NET Core:
-          Action: POST /api/Contact  أو  /Contact/Send
-          ============================================================
-        -->
-        <form id="contactForm" onsubmit="submitContact(event)">
-          <!-- @Html.AntiForgeryToken() -->
+        <form id="contactForm" onsubmit="submitContact(event)" novalidate>
 
-          <div class="mb-4">
-            <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="cName" name="Name" required placeholder="أدخل اسمك الكامل" />
-          </div>
+            <div class="mb-4">
+                <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="cName" name="Name" placeholder="أدخل اسمك الكامل" />
+                <small id="cNameError" class="text-danger" style="display:none; font-weight:bold;">* يرجى إدخال اسمك الكامل.</small>
+            </div>
 
-          <div class="mb-4">
-            <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
-            <input type="email" class="form-control" id="cEmail" name="Email" required placeholder="example@email.com" />
-          </div>
+            <div class="mb-4">
+                <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" id="cEmail" name="Email" placeholder="example@email.com" />
+                <small id="cEmailError" class="text-danger" style="display:none; font-weight:bold;">* يرجى إدخال بريد إلكتروني صحيح.</small>
+            </div>
 
           <div class="mb-4">
             <label class="form-label">رقم الهاتف (اختياري)</label>
-            <input type="tel" class="form-control" id="cPhone" name="Phone" placeholder="05xxxxxxxx" />
+            <input type="tel" class="form-control" id="cPhone" name="Phone" placeholder="07xxxxxxxx" />
           </div>
 
           <div class="mb-4">
@@ -90,8 +84,9 @@
 
           <div class="mb-4">
             <label class="form-label">الرسالة <span class="text-danger">*</span></label>
-            <textarea class="form-control" id="cMessage" name="Message" rows="5" required
+            <textarea class="form-control" id="cMessage" name="Message" rows="5"
               placeholder="اكتب رسالتك هنا وسنرد عليك في أقرب وقت..."></textarea>
+            <small id="cMessageError" class="text-danger" style="display:none;font-weight:bold;">* يرجى كتابة رسالتك.</small>
           </div>
 
           <button type="submit" class="btn-submit">
@@ -110,7 +105,7 @@
           <div class="info-item-icon"><i class="bi bi-envelope-fill"></i></div>
           <div class="info-item-text">
             <h6>البريد الإلكتروني</h6>
-            <p>support@elderease.jo</p>
+            <p id="contact-email-val">support@elderease.jo</p>
           </div>
         </div>
 
@@ -118,7 +113,7 @@
           <div class="info-item-icon"><i class="bi bi-telephone-fill"></i></div>
           <div class="info-item-text">
             <h6>الهاتف</h6>
-            <p>06-1234567</p>
+            <p id="contact-phone-val">06-1234567</p>
           </div>
         </div>
 
@@ -126,7 +121,7 @@
           <div class="info-item-icon"><i class="bi bi-whatsapp"></i></div>
           <div class="info-item-text">
             <h6>واتساب</h6>
-            <p>+962-79-1234567</p>
+            <p id="contact-whatsapp-val">+962-79-1234567</p>
           </div>
         </div>
 
@@ -134,7 +129,7 @@
           <div class="info-item-icon"><i class="bi bi-geo-alt-fill"></i></div>
           <div class="info-item-text">
             <h6>العنوان</h6>
-            <p>عمان، المملكة الأردنية الهاشمية</p>
+            <p id="contact-address-val">عمان، المملكة الأردنية الهاشمية</p>
           </div>
         </div>
 
@@ -142,7 +137,7 @@
           <div class="info-item-icon"><i class="bi bi-clock-fill"></i></div>
           <div class="info-item-text">
             <h6>أوقات العمل</h6>
-            <p>الأحد - الخميس: 8 صباحاً - 5 مساءً</p>
+            <p id="contact-hours-val">الأحد - الخميس: 8 صباحاً - 5 مساءً</p>
           </div>
         </div>
 
@@ -161,7 +156,24 @@
 <footer><p>جميع الحقوق محفوظة &copy; 2025 <span>إيلدر إيز</span></p></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/contact.js"></script>
 
-  <script src="assets/js/contact.js"></script>
+<script>
+  /* ربط معلومات التواصل بإعدادات لوحة الإدارة */
+  (function applyContactSettings() {
+      try {
+          const raw = localStorage.getItem('elderease_settings');
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          const set = (id, val) => { if (val && val.trim()) { const el = document.getElementById(id); if (el) el.textContent = val.trim(); } };
+          set('contact-email-val',    s.supportEmail);
+          set('contact-phone-val',    s.supportPhone);
+          set('contact-whatsapp-val', s.whatsapp);
+          set('contact-address-val',  s.address);
+          set('contact-hours-val',    s.workHours);
+      } catch(e) {}
+  })();
+</script>
+
 </body>
 </html>

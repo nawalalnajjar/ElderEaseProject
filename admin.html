@@ -7,9 +7,42 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="assets/css/admin.css" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+  <style>
+    .btn-tbl.edit {
+      background: linear-gradient(135deg, #c08457, #a06840);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+      font-family: 'Tajawal', sans-serif;
+      margin-left: 4px;
+    }
+    .btn-tbl.edit:hover { opacity: .88; transform: translateY(-1px); }
+  </style>
 </head>
+
 <body>
+
+<!-- MODAL: تأكيد الحذف -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header-red">
+            <i class="bi bi-exclamation-triangle-fill"></i> تنبيه حذف
+        </div>
+        <div class="modal-body">
+            <p id="deleteModalText">هل أنتِ متأكدة من حذف هذا الطلب؟</p>
+        </div>
+        <div class="modal-footer-btns">
+            <button class="btn-gray" onclick="closeDeleteModal()">إلغاء</button>
+            <button id="finalDeleteBtn" class="btn-red" onclick="confirmDeleteAction()">نعم، احذف</button>
+        </div>
+    </div>
+</div>
 
 <!-- OVERLAY (mobile) -->
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -75,325 +108,530 @@
 
   <div class="page-area">
 
-    <!-- ================================
+      <!-- ================================
          SECTION: لوحة التحكم
-    ================================ -->
-    <div class="section active" id="section-dashboard">
-
-      <!-- STATS -->
-      <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-xl-3">
-          <div class="stat-card">
-            <div class="stat-icon orange"><i class="bi bi-people-fill"></i></div>
-            <div class="stat-info"><div class="num">247</div><div class="label">مستخدم مسجل</div><div class="change up">▲ +12 هذا الأسبوع</div></div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-          <div class="stat-card">
-            <div class="stat-icon blue"><i class="bi bi-life-preserver"></i></div>
-            <div class="stat-info"><div class="num">84</div><div class="label">طلب مساعدة</div><div class="change up">▲ +7 اليوم</div></div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-          <div class="stat-card">
-            <div class="stat-icon green"><i class="bi bi-person-check-fill"></i></div>
-            <div class="stat-info"><div class="num">32</div><div class="label">متطوع نشط</div><div class="change up">▲ +3 هذا الشهر</div></div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-          <div class="stat-card">
-            <div class="stat-icon purple"><i class="bi bi-envelope-fill"></i></div>
-            <div class="stat-info"><div class="num">18</div><div class="label">رسالة جديدة</div><div class="change down">▼ -2 أمس</div></div>
-          </div>
-        </div>
+      ================================ -->
+      <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+          <h6 style="font-weight:800; color:var(--primary); margin:0;">
+              <i class="bi bi-clock-history me-2"></i> تحديث لحظي لبيانات الموقع 
+          </h6>
+          <button class="btn-primary-sm" onclick="showSection('requests')">عرض الكل</button>
       </div>
 
-      <!-- CHART + QUICK ACTIONS -->
-      <div class="row g-3 mb-4">
-        <div class="col-lg-8">
-          <div class="table-card">
-            <div class="card-head"><h6><i class="bi bi-bar-chart me-2" style="color:var(--primary)"></i>طلبات المساعدة - آخر 7 أيام</h6></div>
-            <div class="p-4">
-              <div class="bar-chart" id="barChart"></div>
-              <div class="bar-labels" id="barLabels"></div>
-            </div>
+      <div class="table-card">
+          <div class="table-responsive">
+              <table></table>
           </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="table-card">
-            <div class="card-head"><h6><i class="bi bi-lightning me-2" style="color:var(--primary)"></i>إجراءات سريعة</h6></div>
-            <div class="p-3">
-              <div class="row g-2">
-                <div class="col-6">
-                  <div class="quick-action" onclick="showSection('volunteers', document.querySelector('[onclick*=volunteers]'))">
-                    <i class="bi bi-person-plus-fill"></i>
-                    <p>إضافة متطوع</p>
+      </div>
+
+      <div class="section active" id="section-dashboard">
+          <div class="row g-3 mb-4">
+              <div class="col-sm-6 col-xl-3">
+                  <div class="stat-card">
+                      <div class="stat-icon orange"><i class="bi bi-people-fill"></i></div>
+                      <div class="stat-info">
+                          <div class="num" id="users-count">0</div> <div class="label">مستخدم مسجل</div>
+                          <div class="change up">▲ تحديث لحظي</div>
+                      </div>
                   </div>
-                </div>
-                <div class="col-6">
-                  <div class="quick-action" onclick="showSection('requests', document.querySelector('[onclick*=requests]'))">
-                    <i class="bi bi-inbox-fill"></i>
-                    <p>عرض الطلبات</p>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="quick-action" onclick="showSection('messages', document.querySelector('[onclick*=messages]'))">
-                    <i class="bi bi-envelope-open-fill"></i>
-                    <p>الرسائل</p>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="quick-action" onclick="showSection('settings', document.querySelector('[onclick*=settings]'))">
-                    <i class="bi bi-sliders"></i>
-                    <p>الإعدادات</p>
-                  </div>
-                </div>
               </div>
-            </div>
+              <div class="col-sm-6 col-xl-3">
+                  <div class="stat-card">
+                      <div class="stat-icon blue"><i class="bi bi-life-preserver"></i></div>
+                      <div class="stat-info">
+                          <div class="num" id="requests-count">0</div> <div class="label">طلب مساعدة</div>
+                          <div class="change up">▲ تحديث لحظي</div>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-sm-6 col-xl-3">
+                  <div class="stat-card">
+                      <div class="stat-icon green"><i class="bi bi-person-check-fill"></i></div>
+                      <div class="stat-info">
+                          <div class="num" id="volunteers-count">0</div> <div class="label">متطوع نشط</div>
+                          <div class="change up">▲ تحديث لحظي</div>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-sm-6 col-xl-3">
+                  <div class="stat-card">
+                      <div class="stat-icon purple"><i class="bi bi-envelope-fill"></i></div>
+                      <div class="stat-info">
+                          <div class="num" id="messages-count">0</div> <div class="label">رسالة جديدة</div>
+                          <div class="change down">▼ تحديث لحظي</div>
+                      </div>
+                  </div>
+              </div>
           </div>
-        </div>
+
+          <h5 class="mb-4" style="font-weight:800;">احصائيات اخر 7 ايام :</h5>
+          <div class="row g-3 mb-4"></div>
+          <div class="row g-3 mb-4">
+              <div class="col-lg-8">
+                  <div class="table-card">
+                      <div class="p-4">
+                          <div class="bar-chart d-flex justify-content-between align-items-end" id="adminBarChart" style="height: 150px;">
+                              طلبات المساعدة - آخر 7 أيام
+                          </div>
+                          <div class="bar-labels d-flex justify-content-between mt-2" id="adminBarLabels"></div>
+                      </div>
+                      <div class="p-4">
+                          <div class="bar-chart" id="barChart"></div>
+                          <div class="bar-labels" id="barLabels"></div>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-lg-4">
+                  <div class="table-card">
+                      <div class="card-head"><h6><i class="bi bi-lightning me-2" style="color:var(--primary)"></i>إجراءات سريعة</h6></div>
+                      <div class="p-3">
+                          <div class="row g-2">
+                              <div class="col-6">
+                                  <div class="quick-action" onclick="showSection('volunteers', document.querySelector('[onclick*=volunteers]'))">
+                                      <i class="bi bi-person-plus-fill"></i>
+                                      <p>إضافة متطوع</p>
+                                  </div>
+                              </div>
+                              <div class="col-6">
+                                  <div class="quick-action" onclick="showSection('requests', document.querySelector('[onclick*=requests]'))">
+                                      <i class="bi bi-inbox-fill"></i>
+                                      <p>عرض الطلبات</p>
+                                  </div>
+                              </div>
+                              <div class="col-6">
+                                  <div class="quick-action" onclick="showSection('messages', document.querySelector('[onclick*=messages]'))">
+                                      <i class="bi bi-envelope-open-fill"></i>
+                                      <p>الرسائل</p>
+                                  </div>
+                              </div>
+                              <div class="col-6">
+                                  <div class="quick-action" onclick="showSection('settings', document.querySelector('[onclick*=settings]'))">
+                                      <i class="bi bi-sliders"></i>
+                                      <p>الإعدادات</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="table-card">
+              <div class="card-head">
+                  <h6><i class="bi bi-clock-history me-2" style="color:var(--primary)"></i>آخر طلبات المساعدة</h6>
+                  <button class="btn-primary-sm" onclick="showSection('requests', document.querySelector('[onclick*=requests]'))">
+                      عرض الكل
+                  </button>
+              </div>
+              <div class="table-responsive">
+                  <table>
+                      <thead>
+                          <tr><th>#</th><th>الاسم</th><th>نوع المشكلة</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr>
+                      </thead>
+                      <tbody id="recent-requests-list">
+                          <tr>
+                              <td colspan="6" class="text-center">جاري تحميل أحدث الطلبات...</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
       </div>
 
-      <!-- RECENT REQUESTS TABLE -->
-      <div class="table-card">
-        <div class="card-head">
-          <h6><i class="bi bi-clock-history me-2" style="color:var(--primary)"></i>آخر طلبات المساعدة</h6>
-          <button class="btn-primary-sm" onclick="showSection('requests', document.querySelector('[onclick*=requests]'))">
-            عرض الكل
-          </button>
-        </div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>#</th><th>الاسم</th><th>نوع المشكلة</th><th>التاريخ</th><th>الحالة</th><th>إجراء</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>84</td><td>أم خالد الزيدي</td><td>حجز موعد طبي</td><td>اليوم 10:30</td><td><span class="status-badge s-pending">⏳ قيد المعالجة</span></td><td><button class="btn-tbl">عرض</button></td></tr>
-              <tr><td>83</td><td>أبو محمد الرشيد</td><td>دفع فاتورة</td><td>اليوم 9:15</td><td><span class="status-badge s-done">✓ تمت</span></td><td><button class="btn-tbl">عرض</button></td></tr>
-              <tr><td>82</td><td>سيدة فاطمة علي</td><td>استخدام تطبيق</td><td>أمس 4:00م</td><td><span class="status-badge s-pending">⏳ قيد المعالجة</span></td><td><button class="btn-tbl">عرض</button></td></tr>
-              <tr><td>81</td><td>الحاج عبدالله نور</td><td>خدمة حكومية</td><td>أمس 11:00ص</td><td><span class="status-badge s-done">✓ تمت</span></td><td><button class="btn-tbl">عرض</button></td></tr>
-              <tr><td>80</td><td>أم سلطان الأحمد</td><td>مشكلة انترنت</td><td>أمس 8:45ص</td><td><span class="status-badge s-done">✓ تمت</span></td><td><button class="btn-tbl">عرض</button></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================================
+      <!-- ================================
          SECTION: طلبات المساعدة
-    ================================ -->
-    <div class="section" id="section-requests">
-      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h5 style="margin:0;font-weight:800;">طلبات المساعدة</h5>
-        <div class="d-flex gap-2">
-          <select class="form-select form-select-sm" style="width:auto;border-radius:8px;">
-            <option>كل الطلبات</option>
-            <option>قيد المعالجة</option>
-            <option>تمت</option>
-          </select>
-        </div>
+      ================================ -->
+      <div class="section" id="section-requests">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 style="margin:0;font-weight:800;">طلبات المساعدة</h5>
+              <div class="d-flex gap-2">
+                  <select class="form-select form-select-sm" style="width:auto;border-radius:8px;">
+                      <option>كل الطلبات</option>
+                      <option>قيد المعالجة</option>
+                      <option>تمت</option>
+                  </select>
+              </div>
+          </div>
+          <div class="table-card">
+              <div class="table-responsive">
+                  <table>
+                      <thead>
+                          <tr><th>#</th><th>الاسم</th><th>نوع المشكلة</th><th>وصف المشكلة</th><th>الهاتف</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr>
+                      </thead>
+                      <tbody id="all-requests-table">
+                          <tr>
+                              <td colspan="8" class="text-center p-5">
+                                  <div class="spinner-border text-primary" role="status"></div>
+                                  <p class="mt-2">جاري تحميل الطلبات...</p>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
       </div>
-      <!--
-        ============================================================
-        اربط هذا الجدول بـ API: GET /api/HelpRequests
-        استخدم: DELETE /api/HelpRequests/{id} للحذف
-                PATCH /api/HelpRequests/{id}/status للتحديث
-        ============================================================
-      -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>#</th><th>الاسم</th><th>نوع المشكلة</th><th>وصف المشكلة</th><th>الهاتف</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>84</td><td>أم خالد الزيدي</td><td>طبي</td><td>أريد حجز موعد طبي في مستشفى...</td><td>0599111222</td><td>اليوم 10:30</td><td><span class="status-badge s-pending">⏳ قيد المعالجة</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">عرض</button><button class="btn-tbl" onclick="toggleStatus(this)">تم</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>83</td><td>أبو محمد الرشيد</td><td>فاتورة</td><td>أحتاج مساعدة في دفع فاتورة الكهرباء...</td><td>0598222333</td><td>اليوم 9:15</td><td><span class="status-badge s-done">✓ تمت</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">عرض</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>82</td><td>سيدة فاطمة علي</td><td>تطبيق</td><td>لا أستطيع استخدام تطبيق واتساب...</td><td>0597333444</td><td>أمس 4:00م</td><td><span class="status-badge s-pending">⏳ قيد المعالجة</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">عرض</button><button class="btn-tbl" onclick="toggleStatus(this)">تم</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>81</td><td>الحاج عبدالله نور</td><td>حكومي</td><td>أحتاج مساعدة في الضمان الاجتماعي...</td><td>0596444555</td><td>أمس 11:00ص</td><td><span class="status-badge s-done">✓ تمت</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">عرض</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>80</td><td>أم سلطان الأحمد</td><td>انترنت</td><td>الانترنت لا يعمل على هاتفي...</td><td>0595555666</td><td>أمس 8:45ص</td><td><span class="status-badge s-done">✓ تمت</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">عرض</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- ================================
+      <!-- ================================
          SECTION: المتطوعون
-    ================================ -->
-    <div class="section" id="section-volunteers">
-      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h5 style="margin:0;font-weight:800;">إدارة المتطوعين</h5>
-        <button class="btn-primary-sm" data-bs-toggle="modal" data-bs-target="#addVolModal">
-          <i class="bi bi-plus-circle"></i> إضافة متطوع
-        </button>
+      ================================ -->
+      <div class="section" id="section-volunteers">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 style="margin:0;font-weight:800;">إدارة المتطوعين</h5>
+              <button class="btn-primary-sm" data-bs-toggle="modal" data-bs-target="#addVolModal">
+                  <i class="bi bi-plus-circle"></i> إضافة متطوع
+              </button>
+          </div>
+          <div class="table-card">
+              <div class="table-responsive">
+                  <table>
+                      <thead>
+                          <tr><th>#</th><th>الاسم</th><th>التخصص</th><th>الهاتف</th><th>أوقات العمل</th><th>الحالة</th><th>إجراءات</th></tr>
+                      </thead>
+                      <tbody id="volunteers-table-body"></tbody>
+                  </table>
+              </div>
+          </div>
       </div>
-      <!--
-        ============================================================
-        اربط هذا الجدول بـ API: GET /api/Volunteers
-        POST /api/Volunteers للإضافة
-        DELETE /api/Volunteers/{id} للحذف
-        PATCH /api/Volunteers/{id}/status لتغيير الحالة
-        ============================================================
-      -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>#</th><th>الاسم</th><th>التخصص</th><th>الهاتف</th><th>أوقات العمل</th><th>الحالة</th><th>إجراءات</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td>أحمد محمد الخالدي</td><td>تقني</td><td>0599123456</td><td>الأحد - الخميس: 9ص - 5م</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">إيقاف</button></div></td></tr>
-              <tr><td>2</td><td>فاطمة علي السعيد</td><td>إرشاد</td><td>0598765432</td><td>السبت - الأربعاء: 10ص - 4م</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">إيقاف</button></div></td></tr>
-              <tr><td>3</td><td>خالد يوسف العمري</td><td>مساعدة عامة</td><td>0597654321</td><td>يومياً: 8ص - 2م</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">إيقاف</button></div></td></tr>
-              <tr><td>4</td><td>سامي عبدالله النجار</td><td>تقني</td><td>0596543210</td><td>الاثنين - الجمعة: 2م - 8م</td><td><span class="status-badge s-inactive">● موقوف</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl" onclick="activateVol(this)">تفعيل</button></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- ================================
+      <!-- ================================
          SECTION: المستخدمون
-    ================================ -->
-    <div class="section" id="section-users">
-      <h5 class="mb-3" style="font-weight:800;">إدارة المستخدمين</h5>
-      <!--
-        ============================================================
-        اربط هذا الجدول بـ API: GET /api/Users
-        DELETE /api/Users/{id} للحذف
-        ============================================================
-      -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr><th>#</th><th>الاسم</th><th>البريد الإلكتروني</th><th>تاريخ التسجيل</th><th>عدد الطلبات</th><th>الحالة</th><th>إجراءات</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>247</td><td>سهام محمد القادري</td><td>seham@email.com</td><td>2025-03-20</td><td>3</td><td><span class="status-badge s-active">● نشط</span></td><td><button class="btn-tbl danger">حذف</button></td></tr>
-              <tr><td>246</td><td>أبو عمر العتيبي</td><td>-</td><td>2025-03-18</td><td>1</td><td><span class="status-badge s-active">● نشط</span></td><td><button class="btn-tbl danger">حذف</button></td></tr>
-              <tr><td>245</td><td>حنان علي المطيري</td><td>hanan@email.com</td><td>2025-03-15</td><td>5</td><td><span class="status-badge s-active">● نشط</span></td><td><button class="btn-tbl danger">حذف</button></td></tr>
-              <tr><td>244</td><td>الحاج ناصر السبيعي</td><td>-</td><td>2025-03-10</td><td>2</td><td><span class="status-badge s-inactive">● موقوف</span></td><td><button class="btn-tbl danger">حذف</button></td></tr>
-            </tbody>
-          </table>
-        </div>
+      ================================ -->
+      <div class="section" id="section-users">
+          <h5 class="mb-3" style="font-weight:800;">إدارة المستخدمين</h5>
+          <div class="table-card">
+              <div class="table-responsive">
+                  <table>
+                      <thead>
+                          <tr><th>#</th><th>الاسم</th><th>وسيلة التواصل</th><th>عدد الطلبات</th><th>المصدر</th></tr>
+                      </thead>
+                      <tbody id="users-table-body"></tbody>
+                  </table>
+              </div>
+          </div>
       </div>
-    </div>
 
-    <!-- ================================
+      <!-- ================================
          SECTION: المؤسسات
-    ================================ -->
-    <div class="section" id="section-organizations">
-      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h5 style="margin:0;font-weight:800;">إدارة المؤسسات</h5>
-        <button class="btn-primary-sm"><i class="bi bi-plus-circle"></i> إضافة مؤسسة</button>
+      ================================ -->
+      <div class="section" id="section-organizations">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 style="margin:0;font-weight:800;">إدارة المؤسسات</h5>
+              <button class="btn-primary-sm" onclick="openAddOrgModal()"><i class="bi bi-plus-circle"></i> إضافة مؤسسة</button>
+          </div>
+          <div class="table-card">
+              <div class="table-responsive">
+                  <table>
+                      <thead><tr><th>#</th><th>اسم المؤسسة</th><th>النوع</th><th>المدينة</th><th>البريد الإلكتروني</th><th>إجراءات</th></tr></thead>
+                      <tbody id="orgs-table-body"></tbody>
+                  </table>
+              </div>
+          </div>
       </div>
-      <div class="table-card">
-        <div class="table-responsive">
-          <table>
-            <thead><tr><th>#</th><th>اسم المؤسسة</th><th>النوع</th><th>الهاتف</th><th>الموقع</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-            <tbody>
-              <tr><td>1</td><td>مستشفى الملك حسين</td><td>صحية</td><td>06-5300970</td><td>عمان - الحسين</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>2</td><td>جمعية رعاية المسنين</td><td>خيرية</td><td>06-5234567</td><td>عمان - الجبيهة</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>3</td><td>صندوق التقاعد المدني</td><td>تقاعد</td><td>06-5006900</td><td>عمان</td><td><span class="status-badge s-active">● نشط</span></td><td><div class="d-flex gap-1"><button class="btn-tbl">تعديل</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- ================================
+      <!-- ================================
          SECTION: الرسائل
-    ================================ -->
-    <div class="section" id="section-messages">
-      <h5 class="mb-3" style="font-weight:800;">رسائل التواصل</h5>
-      <!--
-        ============================================================
-        اربط بـ API: GET /api/Contact  |  DELETE /api/Contact/{id}
-        ============================================================
-      -->
-      <div class="table-card">
-        <div class="table-responsive">
-          <table>
-            <thead><tr><th>#</th><th>الاسم</th><th>البريد / الهاتف</th><th>الموضوع</th><th>الرسالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
-            <tbody>
-              <tr><td>18</td><td>أمجد سالم العنزي</td><td>amjad@email.com</td><td>اقتراح</td><td>أقترح إضافة خاصية التذكير الصوتي...</td><td>اليوم 11:00</td><td><div class="d-flex gap-1"><button class="btn-tbl">رد</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>17</td><td>ليلى محمد الحمدان</td><td>0597001122</td><td>طلب مساعدة</td><td>أحتاج مساعدة في استخدام الموقع...</td><td>اليوم 9:30</td><td><div class="d-flex gap-1"><button class="btn-tbl">رد</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-              <tr><td>16</td><td>يوسف خليل البطاينة</td><td>youssef@email.com</td><td>انضمام متطوع</td><td>أريد التسجيل كمتطوع في المنصة...</td><td>أمس 3:15م</td><td><div class="d-flex gap-1"><button class="btn-tbl">رد</button><button class="btn-tbl danger">حذف</button></div></td></tr>
-            </tbody>
-          </table>
-        </div>
+      ================================ -->
+      <div class="section" id="section-messages">
+          <h5 class="mb-3" style="font-weight:800;">رسائل التواصل</h5>
+          <div class="table-card">
+              <div class="table-responsive">
+                  <table>
+                      <thead><tr><th>#</th><th>الاسم</th><th>البريد / الهاتف</th><th>الموضوع</th><th>الرسالة</th><th>التاريخ</th><th>إجراءات</th></tr></thead>
+                      <tbody id="messages-table-body"></tbody>
+                  </table>
+              </div>
+          </div>
       </div>
-    </div>
 
-    <!-- ================================
+      <!-- ================================
          SECTION: الإعدادات
-    ================================ -->
-    <div class="section" id="section-settings">
-      <h5 class="mb-3" style="font-weight:800;">إعدادات الموقع</h5>
-      <div class="row g-3">
-        <div class="col-lg-7">
-          <div class="table-card p-4">
-            <h6 class="mb-3" style="font-weight:700;color:var(--primary);">معلومات عامة</h6>
-            <!-- اربط بـ: GET /api/Settings  |  PUT /api/Settings -->
-            <form onsubmit="e => e.preventDefault()">
-              <div class="mb-3"><label class="form-label">اسم المنصة</label><input type="text" class="form-control" value="إيلدر إيز" /></div>
-              <div class="mb-3"><label class="form-label">البريد الإلكتروني للتواصل</label><input type="email" class="form-control" value="support@elderease.jo" /></div>
-              <div class="mb-3"><label class="form-label">رقم الهاتف</label><input type="text" class="form-control" value="06-1234567" /></div>
-              <div class="mb-3"><label class="form-label">رسالة الترحيب (الصفحة الرئيسية)</label><textarea class="form-control" rows="3">نحن هنا لنجعل التقنية أسهل لك</textarea></div>
-              <div class="mb-4"><label class="form-label">العنوان</label><input type="text" class="form-control" value="عمان، المملكة الأردنية الهاشمية" /></div>
-              <button type="submit" class="btn-primary-sm"><i class="bi bi-save me-1"></i> حفظ الإعدادات</button>
-            </form>
+      ================================ -->
+      <div class="section" id="section-settings">
+          <h5 class="mb-3" style="font-weight:800;">إعدادات الموقع</h5>
+          <div class="row g-3">
+              <div class="col-lg-7">
+                  <div class="table-card p-4">
+                      <h6 class="mb-3" style="font-weight:700;color:var(--primary);">معلومات عامة</h6>
+                      <form id="settings-general-form">
+                          <div class="mb-3">
+                              <label class="form-label">البريد الإلكتروني للتواصل</label>
+                              <input type="email" id="set-support-email" class="form-control" value="support@elderease.jo" />
+                          </div>
+                          <div class="mb-3">
+                              <label class="form-label">رقم الهاتف</label>
+                              <input type="text" id="set-support-phone" class="form-control" value="06-1234567" />
+                          </div>
+                          <div class="mb-3">
+                              <label class="form-label">رقم الواتساب</label>
+                              <input type="text" id="set-whatsapp" class="form-control" value="+962-79-1234567" />
+                          </div>
+                          <div class="mb-4">
+                              <label class="form-label">العنوان</label>
+                              <input type="text" id="set-address" class="form-control" value="عمان، المملكة الأردنية الهاشمية" />
+                          </div>
+                          <div class="mb-4">
+                              <label class="form-label">أوقات العمل</label>
+                              <input type="text" id="set-work-hours" class="form-control" value="الأحد - الخميس: 8 صباحاً - 5 مساءً" />
+                          </div>
+                          <button type="submit" class="btn-primary-sm"><i class="bi bi-save me-1"></i> حفظ الإعدادات</button>
+                      </form>
+                  </div>
+              </div>
+
+              <div class="col-lg-5">
+                  <div class="table-card p-4">
+                      <h6 class="mb-3" style="font-weight:700;color:var(--primary);">إعدادات الأمان</h6>
+                      <form id="settings-security-form">
+                          <div class="mb-3">
+                              <label class="form-label">كلمة مرور المدير الحالية</label>
+                              <input type="password" id="current-password" class="form-control" />
+                          </div>
+                          <div class="mb-3">
+                              <label class="form-label">كلمة مرور جديدة</label>
+                              <input type="password" id="new-password" class="form-control" />
+                          </div>
+                          <div class="mb-4">
+                              <label class="form-label">تأكيد كلمة المرور</label>
+                              <input type="password" id="confirm-password" class="form-control" />
+                          </div>
+                          <button type="submit" class="btn-primary-sm"><i class="bi bi-key me-1"></i> تغيير كلمة المرور</button>
+                      </form>
+                  </div>
+              </div>
           </div>
-        </div>
-        <div class="col-lg-5">
-          <div class="table-card p-4">
-            <h6 class="mb-3" style="font-weight:700;color:var(--primary);">إعدادات الأمان</h6>
-            <div class="mb-3"><label class="form-label">كلمة مرور المدير الحالية</label><input type="password" class="form-control" /></div>
-            <div class="mb-3"><label class="form-label">كلمة مرور جديدة</label><input type="password" class="form-control" /></div>
-            <div class="mb-4"><label class="form-label">تأكيد كلمة المرور</label><input type="password" class="form-control" /></div>
-            <button class="btn-primary-sm"><i class="bi bi-key me-1"></i> تغيير كلمة المرور</button>
-          </div>
-        </div>
       </div>
-    </div>
 
   </div><!-- /page-area -->
 </div><!-- /main-content -->
 
-<!-- MODAL: إضافة متطوع -->
+<!-- ======= MODAL: إضافة متطوع ======= -->
 <div class="modal fade" id="addVolModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>إضافة متطوع جديد</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <!-- اربط بـ: POST /api/Volunteers -->
-        <form onsubmit="addVolunteer(event)">
-          <div class="mb-3"><label class="form-label">الاسم الكامل <span class="text-danger">*</span></label><input type="text" class="form-control" required /></div>
-          <div class="mb-3">
-            <label class="form-label">التخصص</label>
-            <select class="form-select">
-              <option>تقني</option><option>إرشاد</option><option>مساعدة عامة</option>
-            </select>
-          </div>
-          <div class="mb-3"><label class="form-label">رقم الهاتف <span class="text-danger">*</span></label><input type="tel" class="form-control" required /></div>
-          <div class="mb-4"><label class="form-label">أوقات العمل</label><input type="text" class="form-control" placeholder="مثال: الأحد - الخميس: 9ص - 5م" /></div>
-          <div class="d-flex gap-2 justify-content-end">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-            <button type="submit" class="btn-primary-sm"><i class="bi bi-check-circle me-1"></i> إضافة</button>
-          </div>
-        </form>
-      </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>إضافة متطوع جديد</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="addVolunteerForm" onsubmit="addVolunteer(event)" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                        <input type="text" id="new-vol-name" class="form-control" />
+                        <small id="nameError" class="text-danger" style="display:none; font-weight:bold; margin-top:5px;">
+                            * يرجى إدخال اسم المتطوع!
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">التخصص</label>
+                        <select class="form-select" id="new-vol-specialty">
+                            <option value="technical">تقني</option>
+                            <option value="guidance">إرشاد</option>
+                            <option value="general">مساعدة عامة</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="new-vol-phone" class="form-control" placeholder="07xxxxxxxx" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" id="new-vol-email" class="form-control" placeholder="example@email.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">عدد الساعات الأسبوعية</label>
+                        <input type="number" id="new-vol-hours" class="form-control" min="1" max="168" placeholder="مثال: 7" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">جدول أوقات العمل</label>
+                        <input type="text" id="new-vol-schedule" class="form-control" placeholder="مثال: الأحد - الخميس: 9ص - 5م" />
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn-primary-sm"><i class="bi bi-check-circle me-1"></i> إضافة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+
+<!-- ======= MODAL: تعديل متطوع ======= -->
+<div class="modal fade" id="editVolModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none;">
+            <div class="modal-header" style="background:var(--primary, #c08457); color:#fff; border-radius:16px 16px 0 0;">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>تعديل بيانات المتطوع</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="editVolSuccess" class="alert alert-success" style="display:none;">
+                    <i class="bi bi-check-circle-fill me-2"></i>تم حفظ التغييرات بنجاح!
+                </div>
+                <div id="editVolError" class="alert alert-danger" style="display:none;">
+                    حدث خطأ في حفظ التغييرات.
+                </div>
+                <form id="editVolForm" onsubmit="saveVolunteerEdit(event)" novalidate>
+                    <input type="hidden" id="edit-vol-id" />
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                        <input type="text" id="edit-vol-name" class="form-control" />
+                        <small id="editVolNameError" class="text-danger" style="display:none; font-weight:bold; margin-top:5px;">
+                            * يرجى إدخال اسم المتطوع!
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">التخصص</label>
+                        <select class="form-select" id="edit-vol-specialty">
+                            <option value="technical">تقني</option>
+                            <option value="guidance">إرشاد</option>
+                            <option value="general">مساعدة عامة</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="edit-vol-phone" class="form-control" placeholder="07xxxxxxxx" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                        <input type="email" id="edit-vol-email" class="form-control" placeholder="example@email.com" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">عدد الساعات الأسبوعية</label>
+                        <input type="number" id="edit-vol-hours" class="form-control" min="1" max="168" placeholder="مثال: 7" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">جدول أوقات العمل</label>
+                        <input type="text" id="edit-vol-schedule" class="form-control" placeholder="مثال: الأحد - الخميس: 9ص - 5م" />
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn-primary-sm">
+                            <i class="bi bi-save me-1"></i> حفظ التغييرات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= MODAL: إضافة مؤسسة ======= -->
+<div class="modal fade" id="addOrgModal" tabindex="-1" aria-labelledby="addOrgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none;">
+            <div class="modal-header" style="background:var(--primary, #c08457); color:#fff; border-radius:16px 16px 0 0;">
+                <h5 class="modal-title" id="addOrgModalLabel"><i class="bi bi-hospital me-2"></i>إضافة مؤسسة جديدة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="addOrgSuccess" class="alert alert-success" style="display:none;">
+                    <i class="bi bi-check-circle-fill me-2"></i>تم إضافة المؤسسة بنجاح!
+                </div>
+                <form id="addOrgForm" onsubmit="addOrganization(event)" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">اسم المؤسسة <span class="text-danger">*</span></label>
+                        <input type="text" id="new-org-name" class="form-control" placeholder="أدخل اسم المؤسسة" />
+                        <small id="orgNameError" class="text-danger" style="display:none; font-weight:bold; margin-top:5px;">
+                            * يرجى إدخال اسم المؤسسة!
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نوع النشاط</label>
+                        <input type="text" id="new-org-type" class="form-control" placeholder="مثال: رعاية صحية، تعليم..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">المدينة</label>
+                        <input type="text" id="new-org-city" class="form-control" placeholder="مثال: عمان" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="new-org-phone" class="form-control" placeholder="06xxxxxxx" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">أوقات العمل</label>
+                        <input type="text" id="new-org-hours" class="form-control" placeholder="مثال: الأحد - الخميس 8ص - 4م" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" id="new-org-email" class="form-control" placeholder="info@example.com" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">وصف المؤسسة</label>
+                        <textarea id="new-org-desc" class="form-control" rows="3" placeholder="وصف مختصر عن المؤسسة..."></textarea>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn-primary-sm">
+                            <i class="bi bi-check-circle me-1"></i> إضافة
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= MODAL: تعديل مؤسسة ======= -->
+<div class="modal fade" id="editOrgModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none;">
+            <div class="modal-header" style="background:var(--primary, #c08457); color:#fff; border-radius:16px 16px 0 0;">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>تعديل بيانات المؤسسة</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="editOrgSuccess" class="alert alert-success" style="display:none;">
+                    <i class="bi bi-check-circle-fill me-2"></i>تم حفظ التغييرات بنجاح!
+                </div>
+                <div id="editOrgError" class="alert alert-danger" style="display:none;">
+                    حدث خطأ في حفظ التغييرات.
+                </div>
+                <form id="editOrgForm" onsubmit="saveOrgEdit(event)" novalidate>
+                    <input type="hidden" id="edit-org-id" />
+                    <div class="mb-3">
+                        <label class="form-label">اسم المؤسسة <span class="text-danger">*</span></label>
+                        <input type="text" id="edit-org-name" class="form-control" />
+                        <small id="editOrgNameError" class="text-danger" style="display:none; font-weight:bold; margin-top:5px;">
+                            * يرجى إدخال اسم المؤسسة!
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نوع النشاط</label>
+                        <input type="text" id="edit-org-type" class="form-control" placeholder="مثال: رعاية صحية، تعليم..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">المدينة</label>
+                        <input type="text" id="edit-org-city" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رقم الهاتف</label>
+                        <input type="tel" id="edit-org-phone" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">أوقات العمل</label>
+                        <input type="text" id="edit-org-hours" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="email" id="edit-org-email" class="form-control" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">وصف المؤسسة</label>
+                        <textarea id="edit-org-desc" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn-primary-sm">
+                            <i class="bi bi-save me-1"></i> حفظ التغييرات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <script src="assets/js/admin.js"></script>
+<script src="assets/js/admin.js"></script>
 </body>
 </html>
